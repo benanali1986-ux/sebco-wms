@@ -1,0 +1,773 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="mobile-web-app-capable" content="yes">
+<link rel="manifest" href="manifest.json">
+<title>SEBCO - إدارة المستودعات</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --gd:#1a3a2a;--gm:#2d5a3d;--gl:#3d7a52;
+  --gold:#c9a84c;--gold2:#e8c97a;
+  --bg:#f4f6f4;--brd:#d0d8d2;
+  --red:#c0392b;--ok:#27ae60;--tx:#1a2e22;--tx2:#4a6355;--blue:#2980b9;
+}
+body{font-family:Arial,sans-serif;background:var(--bg);min-height:100vh;color:var(--tx)}
+
+/* ---- LOGIN ---- */
+#login{min-height:100vh;background:linear-gradient(135deg,var(--gd),var(--gm));
+  display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px}
+.logo-box{text-align:center;margin-bottom:20px}
+.logo-text{font-size:44px;font-weight:900;color:var(--gold);letter-spacing:5px}
+.logo-line{height:2px;background:#8a7a50;margin:6px 10px}
+.logo-sub{font-size:12px;color:rgba(255,255,255,.75)}
+.lcard{background:#fff;border-radius:18px;padding:22px;width:100%;max-width:320px;box-shadow:0 16px 50px rgba(0,0,0,.3)}
+.lcard h3{color:var(--gd);font-size:14px;margin-bottom:14px;text-align:center}
+.rgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:18px}
+.rbtn{padding:13px;border:2px solid var(--brd);border-radius:10px;text-align:center;cursor:pointer;background:#fff}
+.rbtn.act{border-color:var(--gl);background:#f0f8f3}
+.rico{font-size:24px;display:block;margin-bottom:3px}
+.rname{font-size:12px;font-weight:700;color:var(--gd)}
+.rdesc{font-size:10px;color:var(--tx2)}
+.pin-dots{display:flex;justify-content:center;gap:12px;margin-bottom:14px}
+.dot{width:15px;height:15px;border-radius:50%;border:2px solid var(--brd);background:#fff;transition:.2s}
+.dot.on{background:var(--gd);border-color:var(--gd)}
+.numpad{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px}
+.nbtn{padding:15px;border:2px solid var(--brd);border-radius:10px;background:#fff;
+  font-size:19px;font-weight:700;cursor:pointer;color:var(--gd);text-align:center}
+.nbtn:active{background:var(--gd);color:#fff}
+.lbtn{width:100%;padding:13px;background:linear-gradient(135deg,var(--gold),var(--gold2));
+  color:var(--gd);border:none;border-radius:10px;font-size:15px;font-weight:800;cursor:pointer;margin-bottom:6px}
+.pinp{width:100%;padding:11px;border:2px solid var(--brd);border-radius:10px;
+  font-size:15px;text-align:center;letter-spacing:4px;margin-bottom:12px;direction:ltr}
+.pinp:focus{outline:none;border-color:var(--gl)}
+.lerr{color:var(--red);font-size:12px;text-align:center;margin-top:6px;display:none}
+
+/* ---- APP ---- */
+#app{display:none}
+.hdr{background:linear-gradient(135deg,var(--gd),var(--gm));color:#fff;
+  padding:9px 13px 11px;position:sticky;top:0;z-index:100;box-shadow:0 3px 12px rgba(0,0,0,.3)}
+.hdr-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:3px}
+.hdr-title{font-size:13px;font-weight:700;color:var(--gold2);flex:1;text-align:center}
+.lout{background:rgba(255,255,255,.15);border:none;color:#fff;padding:5px 9px;border-radius:7px;font-size:11px;cursor:pointer}
+.hdr-sub{font-size:11px;color:rgba(255,255,255,.75);text-align:center}
+.dot2{display:inline-block;width:6px;height:6px;border-radius:50%;background:#2ecc71;margin-right:4px;animation:p2 2s infinite}
+@keyframes p2{0%,100%{opacity:1}50%{opacity:.3}}
+.tabs{display:flex;background:var(--gd);border-bottom:2px solid var(--gold)}
+.tab{flex:1;padding:9px 4px;text-align:center;color:rgba(255,255,255,.55);font-size:11px;font-weight:600;cursor:pointer;border-bottom:3px solid transparent}
+.tab.act{color:var(--gold2);border-bottom-color:var(--gold);background:rgba(201,168,76,.1)}
+.tico{display:block;font-size:15px;margin-bottom:2px}
+
+/* ---- SCREENS ---- */
+.scr{display:none;padding:11px}
+.scr.act{display:block}
+.card{background:#fff;border-radius:13px;padding:13px;margin-bottom:11px;
+  box-shadow:0 2px 7px rgba(0,0,0,.07);border:1px solid var(--brd)}
+.ctitle{font-size:12px;font-weight:700;color:var(--gd);margin-bottom:11px;
+  display:flex;align-items:center;gap:5px;border-bottom:2px solid var(--bg);padding-bottom:7px}
+.fg{margin-bottom:10px}
+label{display:block;font-size:11px;font-weight:600;color:var(--tx2);margin-bottom:3px}
+.req{color:var(--red);margin-right:2px}
+input,select{width:100%;padding:10px 11px;border:2px solid var(--brd);border-radius:9px;
+  font-size:13px;font-family:Arial,sans-serif;color:var(--tx);background:#fff;
+  -webkit-appearance:none;direction:rtl}
+input:focus,select:focus{outline:none;border-color:var(--gl)}
+select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%234a6355' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:left 9px center;padding-left:28px}
+
+/* ---- DATE BAR ---- */
+.dtbar{background:#fff;border-radius:9px;padding:9px 13px;margin-bottom:10px;
+  display:flex;justify-content:space-between;font-size:12px;color:var(--gd);font-weight:600;
+  box-shadow:0 1px 4px rgba(0,0,0,.07)}
+
+/* ---- SEARCH ---- */
+.swrap{position:relative}
+.sinp{padding-right:34px!important}
+.sico{position:absolute;right:9px;top:50%;transform:translateY(-50%);font-size:15px;color:var(--tx2)}
+.sres{position:absolute;top:100%;right:0;left:0;background:#fff;
+  border:2px solid var(--gl);border-top:none;border-radius:0 0 9px 9px;
+  max-height:190px;overflow-y:auto;z-index:50;box-shadow:0 8px 18px rgba(0,0,0,.13);display:none}
+.si{padding:9px 11px;cursor:pointer;border-bottom:1px solid var(--bg);font-size:12px}
+.si:hover{background:var(--bg)}
+.sicode{font-size:10px;color:var(--tx2);margin-top:1px}
+.snone{padding:11px;text-align:center;color:var(--tx2);font-size:12px}
+.smanual{padding:9px 11px;cursor:pointer;color:var(--blue);font-size:12px;font-weight:600;border-top:2px solid var(--bg)}
+
+/* ---- MAT ITEMS ---- */
+.mitem{background:var(--bg);border-radius:9px;padding:11px;margin-bottom:7px}
+.mhdr{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:7px}
+.mname{font-size:12px;font-weight:700;color:var(--gd);flex:1;padding-left:6px}
+.mcode{font-size:10px;color:var(--tx2)}
+.mdel{background:none;border:none;color:var(--red);font-size:17px;cursor:pointer}
+.mflds{display:grid;grid-template-columns:1fr 1fr 1fr;gap:5px}
+.mfld label{font-size:10px}
+.mfld input{padding:7px;font-size:12px}
+.mtotal{text-align:center;font-size:11px;color:var(--tx2);margin-top:5px}
+.mtotal strong{color:var(--gd);font-size:13px}
+.addbtn{width:100%;padding:11px;background:#fff;border:2px dashed var(--gl);
+  border-radius:9px;color:var(--gd);font-size:13px;font-weight:700;cursor:pointer;margin-bottom:11px}
+.subbtn{width:100%;padding:14px;background:linear-gradient(135deg,var(--gold),var(--gold2));
+  color:var(--gd);border:none;border-radius:11px;font-size:15px;font-weight:800;cursor:pointer}
+.subbtn:disabled{opacity:.6}
+.subbtn:active{transform:scale(.98)}
+
+/* ---- MODAL ---- */
+.ov{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:200;display:none;align-items:flex-end}
+.ov.show{display:flex}
+.modal{background:#fff;border-radius:18px 18px 0 0;padding:18px;width:100%;max-height:82vh;overflow-y:auto}
+.mtitle{font-size:15px;font-weight:700;color:var(--gd);margin-bottom:13px;text-align:center}
+.srow{display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--bg);font-size:12px}
+.slbl{color:var(--tx2)}.sval{font-weight:600;color:var(--gd)}
+.sitem{background:var(--bg);border-radius:7px;padding:9px;margin-bottom:5px}
+.siname{font-size:12px;font-weight:700;color:var(--gd)}
+.sidet{font-size:11px;color:var(--tx2);margin-top:2px}
+.mbtns{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:13px}
+.mbcancel{padding:12px;background:#fff;border:2px solid var(--brd);border-radius:9px;font-size:13px;font-weight:700;cursor:pointer;color:var(--tx2)}
+.mbok{padding:12px;background:linear-gradient(135deg,var(--gold),var(--gold2));border:none;border-radius:9px;font-size:13px;font-weight:700;cursor:pointer;color:var(--gd)}
+
+/* ---- RECORDS ---- */
+.ritem{background:#fff;border-radius:11px;padding:11px 13px;margin-bottom:7px;
+  box-shadow:0 2px 5px rgba(0,0,0,.06);border-right:4px solid var(--gl)}
+.ritem.out{border-right-color:var(--red)}
+.rtop{display:flex;justify-content:space-between;margin-bottom:5px;flex-wrap:wrap;gap:3px}
+.rtype{font-size:10px;font-weight:700;padding:2px 7px;border-radius:5px;background:#f0f8f3;color:var(--gd)}
+.rtype.out{background:#fdf0ef;color:var(--red)}
+.rmemo{font-size:11px;color:var(--tx2)}
+.rmeta{font-size:10px;color:var(--tx2);display:flex;gap:7px;flex-wrap:wrap;margin-bottom:5px}
+.rmat{padding:4px 0;border-bottom:1px solid var(--bg);display:flex;justify-content:space-between;align-items:center;font-size:11px}
+
+/* ---- ADMIN ---- */
+.sgrid{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:11px}
+.scard{background:#fff;border-radius:11px;padding:13px;text-align:center;box-shadow:0 2px 7px rgba(0,0,0,.07);border-top:3px solid var(--gold)}
+.sval2{font-size:22px;font-weight:800;color:var(--gd);line-height:1;margin-bottom:2px}
+.slbl2{font-size:10px;color:var(--tx2);font-weight:600}
+.ccard{background:#fff;border-radius:11px;padding:11px 13px;margin-bottom:7px;
+  box-shadow:0 2px 5px rgba(0,0,0,.06);display:flex;justify-content:space-between;align-items:center}
+.cname{font-size:13px;font-weight:700;color:var(--gd)}
+.cwh{font-size:11px;color:var(--tx2)}
+.cpin{background:var(--gd);color:var(--gold2);padding:3px 9px;border-radius:7px;font-size:12px;font-weight:700;font-family:monospace}
+
+/* ---- TOAST ---- */
+.toast{position:fixed;bottom:65px;left:11px;right:11px;padding:12px 15px;border-radius:11px;
+  font-size:13px;font-weight:600;text-align:center;z-index:1000;
+  transform:translateY(120px);transition:.3s;box-shadow:0 7px 22px rgba(0,0,0,.2)}
+.toast.show{transform:translateY(0)}
+.toast.ok{background:var(--ok);color:#fff}
+.toast.err{background:var(--red);color:#fff}
+.spin{display:inline-block;width:14px;height:14px;border:2px solid rgba(255,255,255,.4);
+  border-top-color:#fff;border-radius:50%;animation:sp .7s linear infinite;vertical-align:middle;margin-right:5px}
+@keyframes sp{to{transform:rotate(360deg)}}
+.safe{height:18px}
+.empty{text-align:center;padding:36px 18px;color:var(--tx2)}
+.emico{font-size:44px;margin-bottom:8px}
+.loading{text-align:center;padding:18px;color:var(--tx2);font-size:13px}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="login">
+  <div class="logo-box">
+    <div class="logo-text">SEBCO</div>
+    <div class="logo-line"></div>
+    <div class="logo-sub">المؤسسة السورية للبناء والتشييد | فرع اللاذقية</div>
+  </div>
+  <div class="lcard">
+    <h3>🏪 نظام إدارة المستودعات</h3>
+    <div class="rgrid">
+      <div class="rbtn act" id="rc" onclick="selRole('c')">
+        <span class="rico">🏪</span>
+        <div class="rname">أمين مستودع</div>
+        <div class="rdesc">إدخال المذكرات</div>
+      </div>
+      <div class="rbtn" id="ra" onclick="selRole('a')">
+        <span class="rico">🔐</span>
+        <div class="rname">إدارة</div>
+        <div class="rdesc">التقارير والإشراف</div>
+      </div>
+    </div>
+    <div id="pinsec">
+      <div class="pin-dots">
+        <div class="dot" id="d0"></div><div class="dot" id="d1"></div>
+        <div class="dot" id="d2"></div><div class="dot" id="d3"></div>
+      </div>
+      <div class="numpad">
+        <button class="nbtn" onclick="pk('1')">1</button>
+        <button class="nbtn" onclick="pk('2')">2</button>
+        <button class="nbtn" onclick="pk('3')">3</button>
+        <button class="nbtn" onclick="pk('4')">4</button>
+        <button class="nbtn" onclick="pk('5')">5</button>
+        <button class="nbtn" onclick="pk('6')">6</button>
+        <button class="nbtn" onclick="pk('7')">7</button>
+        <button class="nbtn" onclick="pk('8')">8</button>
+        <button class="nbtn" onclick="pk('9')">9</button>
+        <button class="nbtn" style="font-size:11px" onclick="pk('c')">مسح</button>
+        <button class="nbtn" onclick="pk('0')">0</button>
+        <button class="nbtn" style="color:var(--red)" onclick="pk('d')">⌫</button>
+      </div>
+      <button class="lbtn" onclick="doLogin()">دخول ←</button>
+    </div>
+    <div id="passsec" style="display:none">
+      <input type="password" class="pinp" id="pw" placeholder="كلمة المرور">
+      <button class="lbtn" onclick="doLogin()">دخول ←</button>
+    </div>
+    <div class="lerr" id="lerr">PIN غير صحيح أو الحساب غير نشط</div>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app">
+  <div class="hdr">
+    <div class="hdr-top">
+      <div style="width:50px"></div>
+      <div class="hdr-title" id="htitle">SEBCO</div>
+      <button class="lout" onclick="doLogout()">خروج</button>
+    </div>
+    <div class="hdr-sub" id="hsub"><span class="dot2"></span>-</div>
+  </div>
+
+  <div class="tabs" id="ctabs">
+    <div class="tab act" onclick="goTab('nm',this,'ctabs')"><span class="tico">📝</span>مذكرة جديدة</div>
+    <div class="tab" onclick="goTab('mr',this,'ctabs');loadMR()"><span class="tico">📋</span>سجلي</div>
+  </div>
+  <div class="tabs" id="atabs" style="display:none">
+    <div class="tab act" onclick="goTab('ar',this,'atabs');loadAR()"><span class="tico">📋</span>العمليات</div>
+    <div class="tab" onclick="goTab('ac',this,'atabs');loadC()"><span class="tico">👥</span>الأمناء</div>
+    <div class="tab" onclick="goTab('as',this,'atabs')"><span class="tico">📊</span>إحصائيات</div>
+  </div>
+
+  <!-- NEW MEMO -->
+  <div id="s-nm" class="scr act">
+    <div class="dtbar">
+      <span>📅 التاريخ والوقت</span>
+      <span id="dtshow" style="color:var(--tx2);font-size:11px">-</span>
+    </div>
+    <div class="card">
+      <div class="ctitle"><span>📋</span>معلومات المذكرة</div>
+      <div class="fg">
+        <label><span class="req">*</span>نوع العملية</label>
+        <select id="otype">
+          <option value="">-- اختر نوع العملية --</option>
+          <option>استلام من قطاع خاص</option>
+          <option>استلام من قطاع عام</option>
+          <option>استلام لقاء تحويل</option>
+          <option>مذكرة تحويل</option>
+          <option>تسليم</option>
+          <option>تسليم مواد مبيعة</option>
+        </select>
+      </div>
+      <div class="fg">
+        <label><span class="req">*</span>رقم المذكرة</label>
+        <input type="text" id="mnum" placeholder="أدخل رقم المذكرة">
+      </div>
+      <div class="fg">
+        <label>الجهة (اختياري)</label>
+        <input type="text" id="pname" placeholder="اسم الجهة">
+      </div>
+    </div>
+    <div class="card">
+      <div class="ctitle"><span>📦</span>المواد</div>
+      <div class="fg">
+        <label>بحث بالاسم أو الرمز</label>
+        <div class="swrap">
+          <span class="sico">🔍</span>
+          <input type="text" class="sinp" id="msearch" placeholder="اكتب 2 حرف أو رقم للبحث..." oninput="doSearch(this.value)" autocomplete="off">
+          <div class="sres" id="sres"></div>
+        </div>
+      </div>
+      <div id="mlist"></div>
+      <button class="addbtn" onclick="document.getElementById('msearch').focus()">+ إضافة مادة أخرى</button>
+    </div>
+    <button class="subbtn" onclick="showSum()">👁️ مراجعة المذكرة قبل الإرسال</button>
+    <div class="safe"></div>
+  </div>
+
+  <!-- MY RECORDS -->
+  <div id="s-mr" class="scr">
+    <div id="mrlist" class="loading">جارٍ التحميل...</div>
+    <div class="safe"></div>
+  </div>
+
+  <!-- ADMIN RECORDS -->
+  <div id="s-ar" class="scr">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:9px">
+      <div style="font-size:14px;font-weight:700;color:var(--gd)">كل العمليات</div>
+      <button onclick="expXL()" style="background:var(--gd);color:#fff;border:none;padding:6px 12px;border-radius:7px;font-size:11px;font-weight:700;cursor:pointer">📥 Excel</button>
+    </div>
+    <div id="arlist" class="loading">جارٍ التحميل...</div>
+    <div class="safe"></div>
+  </div>
+
+  <!-- ADMIN CUSTODIANS -->
+  <div id="s-ac" class="scr">
+    <div class="card">
+      <div class="ctitle"><span>➕</span>إضافة أمين مستودع جديد</div>
+      <div class="fg"><label><span class="req">*</span>اسم الأمين</label><input type="text" id="cn" placeholder="الاسم الكامل"></div>
+      <div class="fg"><label><span class="req">*</span>رمز المستودع (أرقام)</label><input type="number" id="cc" placeholder="مثال: 101"></div>
+      <div class="fg"><label><span class="req">*</span>اسم المستودع</label><input type="text" id="cw" placeholder="اسم المستودع"></div>
+      <div class="fg"><label><span class="req">*</span>PIN (4 أرقام)</label><input type="number" id="cp" placeholder="مثال: 1234"></div>
+      <button onclick="addC()" style="width:100%;padding:12px;background:var(--gd);color:#fff;border:none;border-radius:9px;font-size:13px;font-weight:700;cursor:pointer">حفظ الأمين الجديد</button>
+    </div>
+    <div id="clist" class="loading">جارٍ التحميل...</div>
+    <div class="safe"></div>
+  </div>
+
+  <!-- ADMIN STATS -->
+  <div id="s-as" class="scr">
+    <div class="sgrid">
+      <div class="scard"><div class="sval2" id="st0">-</div><div class="slbl2">إجمالي المذكرات</div></div>
+      <div class="scard" style="border-top-color:var(--gl)"><div class="sval2" id="st1">-</div><div class="slbl2">📥 وارد</div></div>
+      <div class="scard" style="border-top-color:var(--red)"><div class="sval2" id="st2">-</div><div class="slbl2">📤 صادر</div></div>
+      <div class="scard" style="border-top-color:var(--blue)"><div class="sval2" id="st3">-</div><div class="slbl2">عمليات اليوم</div></div>
+    </div>
+    <div class="card" style="background:linear-gradient(135deg,var(--gd),var(--gm));color:#fff;border:none">
+      <div class="ctitle" style="color:var(--gold2);border-bottom-color:rgba(255,255,255,.15)"><span>ℹ️</span>معلومات النظام</div>
+      <div style="font-size:12px;line-height:2;color:rgba(255,255,255,.85)">
+        <div>🏢 المؤسسة السورية للبناء والتشييد</div>
+        <div>📍 فرع اللاذقية</div>
+        <div>📦 عدد المواد: 56,225 مادة</div>
+        <div>📱 الإصدار: 1.0.0</div>
+      </div>
+    </div>
+    <div class="safe"></div>
+  </div>
+</div>
+
+<!-- SUMMARY MODAL -->
+<div class="ov" id="sumov">
+  <div class="modal">
+    <div class="mtitle">📋 مراجعة المذكرة</div>
+    <div id="sumcont"></div>
+    <div class="mbtns">
+      <button class="mbcancel" onclick="closeSum()">← تعديل</button>
+      <button class="mbok" id="sendbtn" onclick="sendMemo()">✅ إرسال</button>
+    </div>
+  </div>
+</div>
+
+<!-- EDIT MODAL -->
+<div class="ov" id="editov">
+  <div class="modal">
+    <div class="mtitle">✏️ تعديل سطر</div>
+    <input type="hidden" id="eid"><input type="hidden" id="ecode">
+    <div class="fg"><label>الكمية</label><input type="number" id="eqty"></div>
+    <div class="fg"><label>السعر الإفرادي</label><input type="number" id="eprice"></div>
+    <div class="mbtns">
+      <button class="mbcancel" onclick="document.getElementById('editov').classList.remove('show')">إلغاء</button>
+      <button class="mbok" onclick="saveEdit()">حفظ</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+var URL_ = "https://script.google.com/macros/s/AKfycbwCnrx4DMqfxSjqIjhap77WOCXSeKACcMbgQKPqZrqVDpBH8cFHOGi1Ejbkwbf3J8_csA/exec";
+var PASS_ = "516010";
+var IN_T = ["استلام من قطاع خاص","استلام من قطاع عام","استلام لقاء تحويل"];
+var MATS = [];
+var role = "c", user = null, pin = "", items = [], allRecs = [];
+
+function selRole(r) {
+  role = r;
+  document.getElementById('rc').classList.toggle('act', r==='c');
+  document.getElementById('ra').classList.toggle('act', r==='a');
+  document.getElementById('pinsec').style.display = r==='c'?'block':'none';
+  document.getElementById('passsec').style.display = r==='a'?'block':'none';
+  document.getElementById('lerr').style.display = 'none';
+  pin = ""; updDots();
+}
+
+function pk(k) {
+  if (k==='d') pin=pin.slice(0,-1);
+  else if (k==='c') pin="";
+  else if (pin.length<4) pin+=k;
+  updDots();
+  if (pin.length===4) setTimeout(doLogin,300);
+}
+
+function updDots() {
+  for(var i=0;i<4;i++) document.getElementById('d'+i).classList.toggle('on',i<pin.length);
+}
+
+async function doLogin() {
+  if (role==='a') {
+    if (document.getElementById('pw').value!==PASS_) {
+      document.getElementById('lerr').textContent='كلمة المرور غير صحيحة';
+      document.getElementById('lerr').style.display='block';
+      return;
+    }
+    user={name:'الإدارة',role:'a'};
+    enterApp();
+  } else {
+    if (pin.length<4) return;
+    try {
+      var fd=new URLSearchParams();
+      fd.append('action','verify_pin'); fd.append('pin',pin);
+      var res=await fetch(URL_,{method:'POST',body:fd,headers:{'Content-Type':'application/x-www-form-urlencoded'}});
+      var d=await res.json();
+      if (d.status==='success') {
+        user={name:d.name,wcode:d.warehouse_code,wname:d.warehouse_name,role:'c'};
+        enterApp();
+      } else {
+        document.getElementById('lerr').textContent='PIN غير صحيح أو الحساب غير نشط';
+        document.getElementById('lerr').style.display='block';
+        pin=""; updDots();
+      }
+    } catch(e) {
+      document.getElementById('lerr').textContent='خطأ في الاتصال';
+      document.getElementById('lerr').style.display='block';
+      pin=""; updDots();
+    }
+  }
+}
+
+function enterApp() {
+  document.getElementById('login').style.display='none';
+  document.getElementById('app').style.display='block';
+  updDT(); setInterval(updDT,30000);
+  if (user.role==='c') {
+    document.getElementById('ctabs').style.display='flex';
+    document.getElementById('atabs').style.display='none';
+    document.getElementById('htitle').textContent=user.wname;
+    document.getElementById('hsub').innerHTML='<span class="dot2"></span>'+user.name+' | رمز: '+user.wcode;
+    goTab('nm',document.querySelector('#ctabs .tab'),'ctabs');
+  } else {
+    document.getElementById('ctabs').style.display='none';
+    document.getElementById('atabs').style.display='flex';
+    document.getElementById('htitle').textContent='لوحة الإدارة';
+    document.getElementById('hsub').innerHTML='<span class="dot2"></span>مستودعات SEBCO - فرع اللاذقية';
+    goTab('ar',document.querySelector('#atabs .tab'),'atabs');
+    loadAR();
+  }
+}
+
+function doLogout() {
+  user=null; pin=""; items=[];
+  document.getElementById('login').style.display='flex';
+  document.getElementById('app').style.display='none';
+  document.getElementById('lerr').style.display='none';
+  document.getElementById('pw').value='';
+  document.getElementById('mlist').innerHTML='';
+  document.getElementById('otype').value='';
+  document.getElementById('mnum').value='';
+  document.getElementById('pname').value='';
+  updDots(); selRole('c');
+}
+
+function updDT() {
+  var now=new Date();
+  var d=now.toLocaleDateString('ar-SY',{weekday:'short',year:'numeric',month:'short',day:'numeric'});
+  var t=now.toLocaleTimeString('ar-SY',{hour:'2-digit',minute:'2-digit'});
+  var el=document.getElementById('dtshow');
+  if(el) el.textContent=d+' | '+t;
+}
+
+function goTab(name, el, tid) {
+  document.querySelectorAll('.scr').forEach(function(s){s.classList.remove('act')});
+  document.getElementById('s-'+name).classList.add('act');
+  if(el&&tid){
+    document.querySelectorAll('#'+tid+' .tab').forEach(function(t){t.classList.remove('act')});
+    el.classList.add('act');
+  }
+}
+
+var searchTimer = null;
+function doSearch(q) {
+  var res=document.getElementById('sres');
+  q=q.trim();
+  if(q.length<2){res.style.display='none';return;}
+  res.innerHTML='<div class="snone">جارٍ البحث...</div>';
+  res.style.display='block';
+  clearTimeout(searchTimer);
+  searchTimer=setTimeout(function(){fetchSearch(q);},400);
+}
+
+async function fetchSearch(q) {
+  var res=document.getElementById('sres');
+  try {
+    var fd=new URLSearchParams();
+    fd.append('action','search_materials'); fd.append('q',q);
+    var r=await fetch(URL_,{method:'POST',body:fd,headers:{'Content-Type':'application/x-www-form-urlencoded'}});
+    var d=await r.json();
+    var m=d.data||[];
+    var html='';
+    m.forEach(function(x){
+      html+='<div class="si" onclick="selMat(this)" data-code="'+x[0]+'" data-name="'+x[1].replace(/"/g,'&quot;')+'" data-unit="'+x[2]+'">';
+      html+=x[1]+'<div class="sicode">رمز: '+x[0]+' | '+x[2]+'</div></div>';
+    });
+    if(m.length===0) html='<div class="snone">لا توجد نتائج لـ "'+q+'"</div>';
+    html+='<div class="smanual" onclick="addManual()">+ إضافة "'+q+'" يدوياً (بدون رمز)</div>';
+    res.innerHTML=html; res.style.display='block';
+  } catch(e){
+    res.innerHTML='<div class="snone">خطأ في البحث</div>';
+  }
+}
+
+function selMat(el) {
+  addItem(el.dataset.code, el.dataset.name, el.dataset.unit);
+  document.getElementById('msearch').value='';
+  document.getElementById('sres').style.display='none';
+}
+
+function addManual() {
+  var q=document.getElementById('msearch').value.trim();
+  addItem('',q,'');
+  document.getElementById('msearch').value='';
+  document.getElementById('sres').style.display='none';
+}
+
+function addItem(code,name,unit) {
+  var id=Date.now()+Math.round(Math.random()*1000);
+  items.push({id:id,code:code,name:name,unit:unit,qty:'',price:'',total:0});
+  rendItems();
+}
+
+function rendItems() {
+  var html='';
+  items.forEach(function(it){
+    html+='<div class="mitem" id="i'+it.id+'">';
+    html+='<div class="mhdr"><div><div class="mname">'+it.name+'</div>';
+    if(it.code) html+='<div class="mcode">رمز: '+it.code+' | '+it.unit+'</div>';
+    html+='</div><button class="mdel" onclick="delItem('+it.id+')">✕</button></div>';
+    html+='<div class="mflds">';
+    html+='<div class="mfld"><label>الكمية *</label><input type="number" placeholder="0" value="'+it.qty+'" min="0" oninput="updItem('+it.id+',&#39;qty&#39;,this.value)"></div>';
+    html+='<div class="mfld"><label>السعر الإفرادي</label><input type="number" placeholder="0" value="'+it.price+'" min="0" oninput="updItem('+it.id+',&#39;price&#39;,this.value)"></div>';
+    html+='<div class="mfld"><label>الوحدة</label><input type="text" placeholder="'+(it.unit||'وحدة')+'" value="'+it.unit+'" oninput="updItem('+it.id+',&#39;unit&#39;,this.value)"></div>';
+    html+='</div>';
+    html+='<div class="mtotal">الإجمالي: <strong id="t'+it.id+'">'+it.total.toLocaleString()+' ل.س</strong></div>';
+    html+='</div>';
+  });
+  document.getElementById('mlist').innerHTML=html;
+}
+
+function updItem(id,f,v) {
+  var it=null;
+  for(var i=0;i<items.length;i++){if(items[i].id===id){it=items[i];break;}}
+  if(!it)return;
+  it[f]=v;
+  it.total=(parseFloat(it.qty)||0)*(parseFloat(it.price)||0);
+  var el=document.getElementById('t'+id);
+  if(el)el.textContent=it.total.toLocaleString()+' ل.س';
+}
+
+function delItem(id) {
+  items=items.filter(function(x){return x.id!==id});
+  rendItems();
+}
+
+function showSum() {
+  var type=document.getElementById('otype').value;
+  var mnum=document.getElementById('mnum').value.trim();
+  if(!type){toast('⚠️ اختر نوع العملية','err');return;}
+  if(!mnum){toast('⚠️ أدخل رقم المذكرة','err');return;}
+  if(items.length===0){toast('⚠️ أضف مادة واحدة على الأقل','err');return;}
+  var noQty=false;
+  items.forEach(function(it){if(!it.qty||parseFloat(it.qty)<=0)noQty=true;});
+  if(noQty){toast('⚠️ أدخل الكمية لكل المواد','err');return;}
+  var party=document.getElementById('pname').value.trim();
+  var grand=0; items.forEach(function(it){grand+=it.total;});
+  var html='<div class="srow"><span class="slbl">نوع العملية</span><span class="sval">'+type+'</span></div>';
+  html+='<div class="srow"><span class="slbl">رقم المذكرة</span><span class="sval">'+mnum+'</span></div>';
+  html+='<div class="srow"><span class="slbl">المستودع</span><span class="sval">'+user.wname+' ('+user.wcode+')</span></div>';
+  if(party)html+='<div class="srow"><span class="slbl">الجهة</span><span class="sval">'+party+'</span></div>';
+  html+='<div class="srow"><span class="slbl">عدد المواد</span><span class="sval">'+items.length+' مادة</span></div>';
+  html+='<div class="srow"><span class="slbl">الإجمالي الكلي</span><span class="sval" style="font-size:15px;color:var(--gd)">'+grand.toLocaleString()+' ل.س</span></div>';
+  html+='<div style="margin-top:11px">';
+  items.forEach(function(it){
+    html+='<div class="sitem"><div class="siname">'+it.name+'</div>';
+    html+='<div class="sidet">الكمية: '+it.qty+' '+it.unit+' | السعر: '+(it.price||'-')+' | الإجمالي: '+it.total.toLocaleString()+' ل.س</div></div>';
+  });
+  html+='</div>';
+  document.getElementById('sumcont').innerHTML=html;
+  document.getElementById('sumov').classList.add('show');
+}
+
+function closeSum(){document.getElementById('sumov').classList.remove('show');}
+
+async function sendMemo() {
+  var btn=document.getElementById('sendbtn');
+  btn.disabled=true; btn.innerHTML='<span class="spin"></span>جارٍ الإرسال...';
+  var now=new Date();
+  var fd=new URLSearchParams();
+  fd.append('action','save_memo');
+  fd.append('date',now.toLocaleDateString('en-GB'));
+  fd.append('time',now.toLocaleTimeString('en-GB'));
+  fd.append('custodian',user.name);
+  fd.append('warehouse_code',user.wcode);
+  fd.append('warehouse_name',user.wname);
+  fd.append('type',document.getElementById('otype').value);
+  fd.append('memo_num',document.getElementById('mnum').value.trim());
+  fd.append('party',document.getElementById('pname').value.trim());
+  fd.append('items',JSON.stringify(items.map(function(it){return {code:it.code,name:it.name,unit:it.unit,qty:it.qty,price:it.price||'',total:it.total};})));
+  try {
+    var res=await fetch(URL_,{method:'POST',body:fd,headers:{'Content-Type':'application/x-www-form-urlencoded'}});
+    var d=await res.json();
+    if(d.status==='success'){
+      closeSum(); toast('✅ تم إرسال المذكرة بنجاح!','ok');
+      items=[]; rendItems();
+      document.getElementById('otype').value='';
+      document.getElementById('mnum').value='';
+      document.getElementById('pname').value='';
+    } else { toast('❌ خطأ: '+(d.message||''),'err'); }
+  } catch(e){toast('⚠️ خطأ في الاتصال','err');}
+  finally{btn.disabled=false;btn.innerHTML='✅ إرسال';}
+}
+
+async function loadMR() {
+  document.getElementById('mrlist').innerHTML='<div class="loading">جارٍ التحميل...</div>';
+  try {
+    var fd=new URLSearchParams();
+    fd.append('action','get_records'); fd.append('warehouse_code',user.wcode);
+    var res=await fetch(URL_,{method:'POST',body:fd,headers:{'Content-Type':'application/x-www-form-urlencoded'}});
+    var d=await res.json();
+    rendRecs('mrlist',d.data||[],false);
+  } catch(e){document.getElementById('mrlist').innerHTML='<div class="empty"><p>خطأ في الاتصال</p></div>';}
+}
+
+async function loadAR() {
+  document.getElementById('arlist').innerHTML='<div class="loading">جارٍ التحميل...</div>';
+  try {
+    var fd=new URLSearchParams();
+    fd.append('action','get_all_records');
+    var res=await fetch(URL_,{method:'POST',body:fd,headers:{'Content-Type':'application/x-www-form-urlencoded'}});
+    var d=await res.json();
+    allRecs=d.data||[];
+    rendRecs('arlist',allRecs,true);
+    updStats(allRecs);
+  } catch(e){document.getElementById('arlist').innerHTML='<div class="empty"><p>خطأ في الاتصال</p></div>';}
+}
+
+function rendRecs(cid,rows,isA) {
+  var c=document.getElementById(cid);
+  if(!rows||rows.length===0){c.innerHTML='<div class="empty"><div class="emico">📋</div><p>لا توجد سجلات بعد</p></div>';return;}
+  var memos={};
+  rows.forEach(function(r){
+    var k=r[0];
+    if(!memos[k])memos[k]={id:r[0],date:r[1],time:r[2],cust:r[3],wc:r[4],wn:r[5],type:r[6],memo:r[7],party:r[8],its:[]};
+    memos[k].its.push({code:r[9],name:r[10],unit:r[11],qty:r[12],price:r[13],total:r[14]});
+  });
+  var html='';
+  Object.values(memos).reverse().forEach(function(m){
+    var isIn=IN_T.indexOf(m.type)>=0;
+    html+='<div class="ritem'+(isIn?'':' out')+'">';
+    html+='<div class="rtop"><span class="rtype'+(isIn?'':' out')+'">'+(isIn?'📥':'📤')+' '+m.type+'</span>';
+    html+='<span class="rmemo">م/'+m.memo+'</span></div>';
+    html+='<div class="rmeta"><span>📅 '+m.date+'</span><span>🕐 '+m.time+'</span>';
+    if(isA)html+='<span>🏪 '+m.wn+'</span><span>👤 '+m.cust+'</span>';
+    if(m.party)html+='<span>🏢 '+m.party+'</span>';
+    html+='</div><div>';
+    m.its.forEach(function(it){
+      html+='<div class="rmat"><span>'+it.name+'</span><div style="display:flex;align-items:center;gap:5px">';
+      html+='<span style="color:var(--tx2)">'+it.qty+' '+(it.unit||'')+' '+(it.total?'| '+Number(it.total).toLocaleString()+' ل.س':'')+'</span>';
+      if(isA)html+='<button onclick="opEdit(&#39;'+m.id+'&#39;,&#39;'+it.code+'&#39;,'+parseFloat(it.qty||0)+','+parseFloat(it.price||0)+')" style="background:none;border:none;color:var(--blue);cursor:pointer;font-size:12px">✏️</button>';
+      html+='</div></div>';
+    });
+    html+='</div></div>';
+  });
+  c.innerHTML=html;
+}
+
+function updStats(rows) {
+  var m=new Set(rows.map(function(r){return r[0];}));
+  var inn=new Set(rows.filter(function(r){return IN_T.indexOf(r[6])>=0;}).map(function(r){return r[0];}));
+  var td=new Date().toLocaleDateString('en-GB');
+  var tm=new Set(rows.filter(function(r){return r[1]===td;}).map(function(r){return r[0];}));
+  document.getElementById('st0').textContent=m.size;
+  document.getElementById('st1').textContent=inn.size;
+  document.getElementById('st2').textContent=m.size-inn.size;
+  document.getElementById('st3').textContent=tm.size;
+}
+
+async function loadC() {
+  document.getElementById('clist').innerHTML='<div class="loading">جارٍ التحميل...</div>';
+  try {
+    var fd=new URLSearchParams(); fd.append('action','get_custodians');
+    var res=await fetch(URL_,{method:'POST',body:fd,headers:{'Content-Type':'application/x-www-form-urlencoded'}});
+    var d=await res.json();
+    if(d.data&&d.data.length>0){
+      var html='';
+      d.data.forEach(function(c){
+        html+='<div class="ccard"><div><div class="cname">👤 '+c[0]+'</div><div class="cwh">🏪 '+c[2]+' | رمز: '+c[1]+' | '+c[4]+'</div></div><div class="cpin">'+c[3]+'</div></div>';
+      });
+      document.getElementById('clist').innerHTML=html;
+    } else { document.getElementById('clist').innerHTML='<div class="empty"><div class="emico">👥</div><p>لا يوجد أمناء بعد</p></div>'; }
+  } catch(e){document.getElementById('clist').innerHTML='<div class="empty"><p>خطأ في الاتصال</p></div>';}
+}
+
+async function addC() {
+  var n=document.getElementById('cn').value.trim();
+  var c=document.getElementById('cc').value.trim();
+  var w=document.getElementById('cw').value.trim();
+  var p=document.getElementById('cp').value.trim();
+  if(!n||!c||!w||!p){toast('⚠️ أكمل جميع الحقول','err');return;}
+  if(p.length!==4){toast('⚠️ PIN يجب أن يكون 4 أرقام','err');return;}
+  try {
+    var fd=new URLSearchParams();
+    fd.append('action','save_custodian'); fd.append('name',n);
+    fd.append('warehouse_code',c); fd.append('warehouse_name',w); fd.append('pin',p);
+    var res=await fetch(URL_,{method:'POST',body:fd,headers:{'Content-Type':'application/x-www-form-urlencoded'}});
+    var d=await res.json();
+    if(d.status==='success'){
+      toast('✅ تم إضافة الأمين!','ok');
+      ['cn','cc','cw','cp'].forEach(function(id){document.getElementById(id).value='';});
+      loadC();
+    }
+  } catch(e){toast('⚠️ خطأ في الاتصال','err');}
+}
+
+function opEdit(id,code,qty,price){
+  document.getElementById('eid').value=id;
+  document.getElementById('ecode').value=code;
+  document.getElementById('eqty').value=qty;
+  document.getElementById('eprice').value=price;
+  document.getElementById('editov').classList.add('show');
+}
+
+async function saveEdit(){
+  var id=document.getElementById('eid').value;
+  var code=document.getElementById('ecode').value;
+  var qty=document.getElementById('eqty').value;
+  var price=document.getElementById('eprice').value;
+  var total=(parseFloat(qty)||0)*(parseFloat(price)||0);
+  try {
+    var fd=new URLSearchParams();
+    fd.append('action','update_memo'); fd.append('id',id); fd.append('code',code);
+    fd.append('qty',qty); fd.append('price',price); fd.append('total',total);
+    var res=await fetch(URL_,{method:'POST',body:fd,headers:{'Content-Type':'application/x-www-form-urlencoded'}});
+    var d=await res.json();
+    if(d.status==='success'){toast('✅ تم التعديل!','ok');document.getElementById('editov').classList.remove('show');loadAR();}
+  } catch(e){toast('⚠️ خطأ في الاتصال','err');}
+}
+
+function expXL(){
+  if(!allRecs.length){toast('لا توجد بيانات','err');return;}
+  var BOM="\uFEFF";
+  var hd=["رقم العملية","التاريخ","الوقت","أمين المستودع","رمز المستودع","اسم المستودع","نوع العملية","رقم المذكرة","الجهة","رمز المادة","اسم المادة","الوحدة","الكمية","السعر الإفرادي","الإجمالي"];
+  var csv=BOM+[hd].concat(allRecs).map(function(r){return r.map(function(c){return '"'+String(c||'').replace(/"/g,'""')+'"';}).join(',');}).join('\n');
+  var blob=new Blob([csv],{type:'text/csv;charset=utf-8;'});
+  var url=URL.createObjectURL(blob);
+  var a=document.createElement('a'); a.href=url;
+  var dd=new Date();
+  a.download='SEBCO_'+dd.getFullYear()+'-'+String(dd.getMonth()+1).padStart(2,'0')+'-'+String(dd.getDate()).padStart(2,'0')+'.csv';
+  a.click(); URL.revokeObjectURL(url);
+  toast('✅ تم التصدير!','ok');
+}
+
+function toast(msg,type){
+  var t=document.getElementById('toast');
+  t.textContent=msg; t.className='toast '+type;
+  setTimeout(function(){t.classList.add('show');},10);
+  setTimeout(function(){t.classList.remove('show');},3500);
+}
+
+document.addEventListener('click',function(e){
+  if(!e.target.closest('.swrap')) document.getElementById('sres').style.display='none';
+});
+
+selRole('c');
+</script>
+</body>
+</html>
